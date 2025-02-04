@@ -25,17 +25,27 @@ car_2 <- car_2 %>%
    )
   )
   
+car_2 <- car_2 [, c("Car_Name","Year","Kms_Driven", "Fuel_Type","Seller_Type",
+                    "Transmission", "Owner","Selling_Price")]
+#Rename for car 4
+colnames(car_2) <- c("Name", "Year_mfd", "km_drv", "fuel_type", "seller",
+                     "transmission", "no_own", "price")
+
+#Changing
+car_2$price <- as.numeric(car_2$price)
+
 #Changing the doubles to thousand
 to_thousands <- function(x) {
   paste0(round(x*10000, 2)) 
 }
-selling_price <- sapply(car_2$Selling_Price, to_thousands)
-View(selling_price)
+price <- sapply(car_2$price, to_thousands)
 
-car_2$Selling_Price<-selling_price
+price <- as.numeric(price)
+
+car_2$price<-price
 
 #Merging two colums together in car_4
-car_4<- unite(car_4, Name,car_4$Make,car_4$Model, sep = "-")
+car_4$Name<- paste(car_4$Make,car_4$Model, sep = " ")
 print(car_4)
 
 #RECODING CAR 4
@@ -52,10 +62,22 @@ car_4 <- car_4 %>%
     )
   )
 
-car_4 <- car_4 [, c("Name","Make","Model","Year", "Kilometer", "Fuel Type", 
-                    "Transmission", "Owner","Seller Type","Engine","Max Power",
-                   "Max Torque","Drivetrain","Length","Width","Height",
-                   "Seating Capacity","Fuel Tank Capacity","Price")]
-#Rename Columns
+car_4$Name<- paste(car_4$Make,car_4$Model, sep = " ")
+print(car_4)
+
+#Reorder for car 3
+car_3 <- car_3 [, c("name","year","km_driven", "fuel","seller_type",
+                    "transmission", "owner","selling_price")]
+#Rename for car 3
+colnames(car_3) <- c("Name", "Year_mfd", "km_drv", "fuel_type", "seller",
+                     "transmission", "no_own","price")
+
+#Reorder for car 4
+car_4 <- car_4 [, c("Name","Year","Kilometer", "Fuel Type","Seller Type",
+                    "Transmission", "Owner","Price")]
+#Rename for car 4
 colnames(car_4) <- c("Name", "Year_mfd", "km_drv", "fuel_type", "seller",
                      "transmission", "no_own", "price")
+
+Merge_Cars <- bind_rows(car_1, car_2, car_3, car_4)
+write.csv(Merge_Cars, "Merge Cars.csv", row.names = F)
