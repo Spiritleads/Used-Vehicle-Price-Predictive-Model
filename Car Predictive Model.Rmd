@@ -1,0 +1,143 @@
+# Used-Vehicle-Price-Predictive-Model-EDA
+
+## Objectives
+
+Here is where the pattern discovery for the model will be generated
+
+## Libraries
+
+```{r}
+library(dplyr)#Data Manipulation
+library(ggplot2)#Data Visualizations
+library(tidyr)#Data Tidying and Reshaping
+library(scales)#Scale Balancing
+library(ggcorrplot)
+```
+
+```{r}
+All_Cars <- readr::read_csv("Merge Cars.csv")
+```
+
+### Data Information
+
+#### Data Size & Structure
+
+```{r}
+dim(All_Cars)
+
+str(All_Cars)
+```
+
+### Data Insight to generate
+
+These are the following insighs we are going to generate
+
+-   Distribution of Number of Car Owners
+
+-   Average Selling Price by Car Owners
+
+-   Distribution of Fuel Typef
+
+-   Average Selling Price by Fuel Type
+
+-   Distribution Of Price
+
+-   Relationship between kilometer driven and selling price
+
+    ### Distribution of Number of Previous Owners
+
+    ```{r}
+    owner_dist <- All_Cars %>% group_by(no_own)%>% summarise(owner_count = n()) %>% arrange(desc(owner_count))
+
+    #Color
+    colors <- colorRampPalette(c("#FFFF00", "#FF0000"))(nrow (owner_dist))
+
+    barplot(owner_dist$owner_count, names.arg = 
+    owner_dist$no_own, main = "Distribution of number of Previous
+    Owners", xlab = "Number of Owners", ylab = "Count",
+    col = colors)
+    abline(h = mean(owner_dist$owner_count), lty =3, lwd=3)
+
+
+    ```
+
+### Average Selling Price by Car Owners
+
+```{r}
+owner_price <- All_Cars %>% group_by(no_own) %>% summarise(avg_price= mean (Selling_price)) %>% arrange (desc(avg_price))
+
+#color
+colors_blyl <- colorRampPalette(c("#0000FF", "#ADD8E6"))(nrow(owner_price))
+options(scipen = 999)
+
+#plot
+barplot(owner_price$avg_price, names.arg = 
+owner_price$no_own, main= "Distribution of Prices by Number
+of Previous Owners", xlab = "Number of Owners", ylab = "Price",
+col = colors_blyl, yli = c(0, max(owner_price$avg_price)* 1.1))
+abline(h = mean(owner_price$avg_price), lty=3, lwd=3)
+```
+
+### Distribution of Fuel Type
+
+```{r}
+ggplot(All_Cars, aes(x= fuel_type))+
+  geom_bar(fill ='lightgreen', color='black')+
+  labs(title = 'Frequency of Fuel Types', x='Fuel Type', y='Count')+
+  theme_bw()
+```
+
+### Average Price by Fuel Type
+
+```{r}
+fuel_price <- All_Cars %>% group_by(fuel_type) %>% summarise(
+  average_price= round(mean(Selling_price),0)
+) %>% arrange(desc(average_price))
+
+ggplot(data = fuel_price, aes(x=reorder(fuel_type, -average_price), 
+              y=average_price, fill=fuel_type)) +
+  geom_bar(stat = 'identity', fill ='lightgreen', color='black')+
+  labs(title = "Average Prices of Cars by Fuel Type", y="Average Price"
+       ,x="Fuel Type")
+```
+
+### Price Distribution
+
+```{r}
+ggplot(All_Cars, aes(x = Selling_price))+
+  geom_histogram(bins = 45, fill = 'lightgreen', color='black')+
+  geom_vline(xintercept = mean(All_Cars$Selling_price), linetype='dashed',
+    color='red', linewidth =1)+
+geom_vline(xintercept = median(All_Cars$Selling_price), linetype='dashed',
+     color='blue', linewidth =1)+
+  labs(title = "Distribution of Selling Price", x = "Selling Price", 
+       y= 'Frequency')+
+  theme_bw()
+```
+
+```{r}
+#Selling Price vs. Year Manufactured (by fuel Type)
+ggplot(All_Cars, aes(x = Year_mfd, y =Selling_price, color = fuel_type))+
+  geom_point(alpha=1.5) + #Alpha for overlapping points
+  geom_hline (yintercept = c(10000000, 20000000, 30000000))
+  labs(title= "Selling Price vs. Year Manufactured (by Fuel Type)", 
+       x="Year Manufactured", y ="Selling Price")+
+  theme_bw()
+```
+
+```{r}
+ggplot(All_Cars, aes( x= km_drv, y=Selling_price))+
+  geom_point(alpha = 0.5, color ='blue') + #Alpha for overlapping points
+  labs(tittle ="Selling Price vs. Kilometer Driven", x= "Kilometer Driven",
+       y ="Selling Price")+
+  theme_bw()
+```
+
+### Heatmap
+
+```{r}
+cor_matrix <- cor(All_Cars[, c("Year_mfd", "km_drv",
+        "Selling_price")])#Select numerical cols
+
+ggcorrplot(cor_matrix, method = "square", digits =2, lab = TRUE)
+```
